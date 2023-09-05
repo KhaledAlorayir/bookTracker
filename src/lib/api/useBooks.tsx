@@ -2,7 +2,7 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { Book } from "../types";
 import { MAX_RESULTS_COUNT } from "../const";
 import { useMemo } from "react";
-
+import { parseSearchQuery } from "../utils";
 interface PaginationQuery {
   page: number;
   maxResults: number;
@@ -20,7 +20,9 @@ async function fetchBooksByQueryAndPage(
   { page, maxResults }: PaginationQuery
 ): Promise<PaginatedResponse<Book>> {
   const results = await fetch(
-    `https://www.googleapis.com/books/v1/volumes?q=${searchQuery}&page=${page}&maxResults=${maxResults}`
+    `https://www.googleapis.com/books/v1/volumes?q=${parseSearchQuery(
+      searchQuery
+    )}&page=${page}&maxResults=${maxResults}`
   );
   const books = await results.json();
   return { ...books, currentPage: page };

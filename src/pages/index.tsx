@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useBooks } from "@/lib/api/useBooks";
-//todo handle if isbn
+
 export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchInputValue, setSearchInputValue] = useState("");
@@ -12,7 +12,7 @@ export default function Home() {
   function searchSubmitHandler(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (searchInputValue.trim().length) {
-      setSearchQuery(searchInputValue);
+      setSearchQuery(searchInputValue.trim());
     }
   }
 
