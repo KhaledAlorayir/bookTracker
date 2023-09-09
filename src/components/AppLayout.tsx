@@ -42,7 +42,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
           ))}
         </nav>
       </header>
-      <section className="flex-1">{children}</section>
+      <section className="flex flex-col flex-1">{children}</section>
       <footer className="py-2 text-center">
         <p>
           made by{" "}

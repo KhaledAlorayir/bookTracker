@@ -1,54 +1,59 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { Book } from "../types";
-import { MAX_RESULTS_COUNT } from "../const";
+import { Book, PaginatedResponse } from "../types";
+import { BOOKS_ENDPOINT, INITIAL_QUERY, MAX_RESULTS_COUNT } from "../const";
 import { useMemo } from "react";
 import { parseSearchQuery } from "../utils";
 interface PaginationQuery {
-  page: number;
+  startIndex: number;
   maxResults: number;
 }
 
-interface PaginatedResponse<T> {
-  kind: string;
-  totalItems: number;
-  items: T[] | undefined;
-  currentPage: number;
-}
-
-async function fetchBooksByQueryAndPage(
+export async function fetchBooksByQuery(
   searchQuery: string,
-  { page, maxResults }: PaginationQuery
+  { startIndex, maxResults }: PaginationQuery
 ): Promise<PaginatedResponse<Book>> {
   const results = await fetch(
-    `https://www.googleapis.com/books/v1/volumes?q=${parseSearchQuery(
+    `${BOOKS_ENDPOINT}?q=${parseSearchQuery(
       searchQuery
-    )}&page=${page}&maxResults=${maxResults}`
+    )}&startIndex=${startIndex}&maxResults=${maxResults}`
   );
   const books = await results.json();
-  return { ...books, currentPage: page };
+  return { ...books, currentStartIndex: startIndex };
 }
 
-export function useBooks(searchQuery: string) {
+export function useBooks(
+  searchQuery: string,
+  initialData: PaginatedResponse<Book>
+) {
   const infiniteQuery = useInfiniteQuery({
-    queryKey: ["books"],
+    queryKey: ["books", searchQuery],
     queryFn: async ({ pageParam = 0 }) =>
-      fetchBooksByQueryAndPage(searchQuery, {
-        page: pageParam,
+      fetchBooksByQuery(searchQuery, {
+        startIndex: pageParam,
         maxResults: MAX_RESULTS_COUNT,
       }),
     getNextPageParam: (lastPage) => {
-      const maxPage = Math.ceil(lastPage.totalItems / MAX_RESULTS_COUNT);
-      return maxPage < lastPage.currentPage
-        ? lastPage.currentPage + 1
+      return lastPage.totalItems > lastPage.currentStartIndex
+        ? lastPage.currentStartIndex + MAX_RESULTS_COUNT
         : undefined;
     },
-    enabled: !!searchQuery.trim().length,
+    initialData: () =>
+      searchQuery === INITIAL_QUERY
+        ? { pageParams: [0], pages: [initialData] }
+        : undefined,
   });
 
   return {
     ...infiniteQuery,
     searchResult: useMemo(() => {
-      return infiniteQuery.data?.pages.map((page) => page.items).flat();
+      // parsing results + removing duplicates (API returns duplicates for some reason)
+      return infiniteQuery.data?.pages
+        .map((page) => page.items)
+        .flat()
+        .filter(
+          (book, index, self): book is Book =>
+            !!book && index === self.findIndex((b) => book?.id === b?.id)
+        );
     }, [infiniteQuery.data]),
   };
 }
