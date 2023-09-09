@@ -1,11 +1,12 @@
-import { PropsWithChildren } from "react";
+import { PropsWithChildren, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { cn } from "@/lib/utils";
+import { Toaster } from "@/components/ui/toaster";
+import { useReadingList } from "@/lib/store/readingListStore";
 
 export default function AppLayout({ children }: PropsWithChildren) {
   const router = useRouter();
-  console.log(router.pathname);
   const pages = [
     {
       title: "home",
@@ -18,6 +19,10 @@ export default function AppLayout({ children }: PropsWithChildren) {
       isActive: router.pathname === "/reading-list",
     },
   ];
+
+  useEffect(() => {
+    useReadingList.persist.rehydrate();
+  }, []);
 
   return (
     <main className="container min-h-screen flex flex-col">
@@ -55,6 +60,7 @@ export default function AppLayout({ children }: PropsWithChildren) {
           </Link>
         </p>
       </footer>
+      <Toaster />
     </main>
   );
 }

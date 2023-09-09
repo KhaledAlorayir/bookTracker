@@ -9,8 +9,10 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Book } from "@/lib/types";
-import { Save } from "lucide-react";
+import { Save, Trash } from "lucide-react";
 import React from "react";
+import { useReadingList } from "@/lib/store/readingListStore";
+import { useToast } from "@/components/ui/use-toast";
 
 type Props = {
   books: Book[];
@@ -27,6 +29,10 @@ export default function BookList({ books }: Props) {
 }
 
 function Book({ book }: { book: Book }) {
+  const { addBook, books, removeBook } = useReadingList();
+  const isBookAdded = !!books[book.id];
+  const { toast } = useToast();
+
   return (
     <Card key={book.id} className="w-80 lg:w-96">
       <CardHeader>
@@ -48,12 +54,31 @@ function Book({ book }: { book: Book }) {
         />
       </CardContent>
       <CardFooter className="flex justify-end pb-2">
-        <Button
-          variant="outline"
-          className="h-10 rounded-md px-8 md:h-9 md:px-4 md:py-2"
-        >
-          <Save className="h-4 w-4" />
-        </Button>
+        {isBookAdded ? (
+          <Button
+            variant="destructive"
+            className="h-10 rounded-md px-8 md:h-9 md:px-4 md:py-2"
+            onClick={() => {
+              removeBook(book.id);
+              toast({
+                title: "book has been removed from the reading list!",
+              });
+            }}
+          >
+            <Trash className="h-4 w-4" />
+          </Button>
+        ) : (
+          <Button
+            variant="outline"
+            className="h-10 rounded-md px-8 md:h-9 md:px-4 md:py-2"
+            onClick={() => {
+              addBook(book);
+              toast({ title: "book has been added to the reading list!" });
+            }}
+          >
+            <Save className="h-4 w-4" />
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );

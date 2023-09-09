@@ -8,14 +8,14 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import BookList from "@/components/BookList";
 import { Book, PaginatedResponse } from "@/lib/types";
 import { GetStaticProps, InferGetStaticPropsType } from "next";
-import { INITIAL_QUERY } from "@/lib/const";
+import { INITIAL_QUERY, MAX_RESULTS_COUNT } from "@/lib/const";
 import Loading from "@/components/ui/Loading";
 
 export const getStaticProps: GetStaticProps<{
   initialBooks: PaginatedResponse<Book>;
 }> = async () => {
   const initialBooks = await fetchBooksByQuery(INITIAL_QUERY, {
-    maxResults: 40,
+    maxResults: MAX_RESULTS_COUNT,
     startIndex: 0,
   });
   return { props: { initialBooks } };
